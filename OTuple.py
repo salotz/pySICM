@@ -16,6 +16,9 @@ class otuple(object):
     def __getitem__(self, index):
         return self.tuple[index]
 
+    def __len__(self):
+        return len(self.tuple)
+    
     def __add__(self, otup):
         # only add OTuples that are the same orientation
         if otup.o != self.o:
@@ -55,31 +58,33 @@ class otuple(object):
             except(TypeError):
                 sum_exp.append(otup[i] * self[i])
 
-
         print("returning contraction", sum_exp)
-        return sum_exp
+        return sum(sum_exp)
 
 
+    # forward multiple; OTuple * something
     def __mul__(self, otup):
-        new_tup = []
 
-        # if they are both OTuples contract them
+        # if they are both OTuples
         if isinstance(otup, otuple) and isinstance(self, otuple):
             print("contracting", self, "by", otup)
-            result = self.contract(otup)
-            if isinstance(result, list):
-                return(sum(result))
-            else:
-                return result
-        # if one is an OTuple and the other a scalar elementwise multiply
+            # check to make sure they are the same length
+            if len(self) != len(otup):
+                raise(TypeError, "OTuples must be of the same length to be multiplied")
+            # check to see if they are the same orientation
+            elif self.o == otup.o:
+                raise(NotImplementedError)
+            # if they are not the same orientation contract them
+            elif self.o != otup.o:
+                return self.contract(otup)
+            
+        # if one is an OTuple and the other a scalar, elementwise multiply
         elif isinstance(otup, otuple):
             print("elementwise on ", otup)
             return(otup.elmul(self))
         elif isinstance(self, otuple):
             print("elementwise on ", self)
             return(self.elmul(otup))
-        # if they are both scalars simply take the product
-        else:
-            print("scalar multiplication")
-            return( self * otup)
-            new_tup.append(new_el)
+        
+    # reverse multiple; something * OTuple
+    __rmul__ = __mul__
