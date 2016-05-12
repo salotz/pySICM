@@ -20,10 +20,14 @@ class OTuple(object):
         return len(self.tuple)
 
     def __iter__(self):
-        pass
+        for el in self.tuple:
+            yield el
 
     def __contains__(self, item):
-        pass
+        if item in self.tuple:
+            return True
+        else:
+            return False
 
     def __eq__(self, otup):
         if self.o == otup.o and self.tuple == otup.tuple:
@@ -32,7 +36,7 @@ class OTuple(object):
             return False
     
     def __add__(self, otup):
-        # only add OTuples that are the same orientation
+        # only add OTuples that are the same orientation and length
         if otup.o != self.o:
             raise ValueError("OTuples not the same orientation and cannot be added.")
         elif len(otup.tuple) != len(self.tuple):
@@ -42,7 +46,7 @@ class OTuple(object):
         return otuple(tup, self.o)
 
     def __sub__(self, otup):
-        # only add OTuples that are the same orientation
+        # only subtract OTuples that are the same orientation and length
         if otup.o != self.o:
             raise ValueError("OTuples not the same orientation and cannot be subtracted.")
         elif len(otup.tuple) != len(self.tuple):
@@ -52,51 +56,51 @@ class OTuple(object):
         return otuple(tup, self.o)
 
     def elmul(self, other):
-        try:
-            return [el * other for el in self.tuple]
-        except(TypeError):
-            return [other * el for el in self.tuple]
+        return [el * other for el in self.tuple]
 
     def contract(self, otup):
+        if self.contracts_with(otup):
+            sum_exp = []
+            for i in range(len(self)):
+                new_el = self[i] * otup[i]
+                sum_exp.append(new_el)
 
-        sum_exp = []
-        for i in range(len(self.tuple)):
-            try:
-                sum_exp.append( sum(self[i] * otup[i]) )
-            except(TypeError):
-                pass
-            try:
-                sum_exp.append( sum(otup[i] * self[i]) )
-            except(TypeError):
-                sum_exp.append(otup[i] * self[i])
-
-        print("returning contraction", sum_exp)
-        return sum(sum_exp)
-
+            return sum(sum_exp)
+        else:
+            raise(TypeError)
 
     # forward multiple; OTuple * something
     def __mul__(self, otup):
 
-        # if they are both OTuples
-        if isinstance(otup, otuple) and isinstance(self, otuple):
-            print("contracting", self, "by", otup)
+        # if the other operand is an OTuple either contract or
+        # pairwise multiply
+        if isinstance(otup, OTuple):
+            
             # check to make sure they are the same length
             if len(self) != len(otup):
-                raise(TypeError, "OTuples must be of the same length to be multiplied")
-            # check to see if they are the same orientation
+                raise(TypeError)
+            
+            # if they are the same orientation pairwise multiply
             elif self.o == otup.o:
                 raise(NotImplementedError)
+            
             # if they are not the same orientation contract them
             elif self.o != otup.o:
                 return self.contract(otup)
             
-        # if one is an OTuple and the other a scalar, elementwise multiply
-        elif isinstance(otup, otuple):
-            print("elementwise on ", otup)
-            return(otup.elmul(self))
-        elif isinstance(self, otuple):
-            print("elementwise on ", self)
-            return(self.elmul(otup))
+        # if the other one is a scalar do elementwise multiplication                        
+        elif isinstance(otup, int) or isinstance(otup, float):
+            return(self.elmul(otup))            
+
+        else:
+            raise(TypeError)
         
     # reverse operations
     __rmul__ = __mul__
+
+    
+    def contracts_with(self, otup):
+        if isinstance(otup, OTuple) and len(self) == len(otup) and self.o != otup.o:
+            return True
+        else:
+            return False
