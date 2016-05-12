@@ -1,4 +1,4 @@
-class otuple(object):
+class OTuple(object):
     __name__ = "OTuple"
     def __init__(self, tup, orientation):
         self.tuple = tup
@@ -18,6 +18,18 @@ class otuple(object):
 
     def __len__(self):
         return len(self.tuple)
+
+    def __iter__(self):
+        pass
+
+    def __contains__(self, item):
+        pass
+
+    def __eq__(self, otup):
+        if self.o == otup.o and self.tuple == otup.tuple:
+            return True
+        else:
+            return False
     
     def __add__(self, otup):
         # only add OTuples that are the same orientation
@@ -86,5 +98,5 @@ class otuple(object):
             print("elementwise on ", self)
             return(self.elmul(otup))
         
-    # reverse multiple; something * OTuple
+    # reverse operations
     __rmul__ = __mul__
